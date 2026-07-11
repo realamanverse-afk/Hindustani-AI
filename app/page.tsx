@@ -209,7 +209,7 @@ export default function Page() {
             const lastMsg = updatedMessages[updatedMessages.length - 1];
             if (lastMsg?.role === 'assistant') {
               updatedMessages[updatedMessages.length - 1] = {
-           ...lastMsg,
+               ...lastMsg,
                 content: lastMsg.content + chunk
               };
             }
@@ -266,7 +266,7 @@ export default function Page() {
             const lastMsg = updatedMessages[updatedMessages.length - 1];
             if (lastMsg?.role === 'assistant') {
               updatedMessages[updatedMessages.length - 1] = {
-           ...lastMsg,
+               ...lastMsg,
                 content: lastMsg.content + chunk
               };
             }
@@ -355,167 +355,4 @@ export default function Page() {
           {messages.length === 0 && (
             <div className="h-full flex items-center justify-center text-gray-500">
               <div className="text-center">
-                <h2 className="text-2xl font-bold mb-2">Hindustani AI IN</h2>
-                <p>Kya madad chahiye {userName}? Photo bhej ya bol ke type kar 🎤📸</p>
-              </div>
-            </div>
-          )}
-
-          {messages.map((m, i) => (
-            <div key={i} className="mb-6 group">
-              <div className="flex gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  m.role === 'user'? 'bg-blue-500' : 'bg-green-500'
-                }`}>
-                  {m.role === 'user'? <FiUser size={16} className="text-white" /> : <FiCpu size={16} className="text-white" />}
-                </div>
-
-                <div className="flex-1">
-                  <p className="font-semibold mb-1">{m.role === 'user'? userName : 'Hindustani AI'}</p>
-                  {m.image && (
-                    <img src={m.image} alt="uploaded" className="max-w-sm rounded-lg mb-2 border border-gray-300 dark:border-gray-600" />
-                  )}
-                  <div className="prose dark:prose-invert max-w-none">
-                    <ReactMarkdown
-                      components={{
-                        code({ inline, className, children,...props }) {
-                          const match = /language-(\w+)/.exec(className || '');
-                          return!inline && match? (
-                            <div className="relative group/code">
-                              <button
-                                onClick={() => copyToClipboard(String(children), i)}
-                                className="absolute right-2 top-2 p-2 rounded bg-gray-700 hover:bg-gray-600 opacity-0 group-hover/code:opacity-100 transition"
-                              >
-                                {copiedIndex === i? '✓' : <FiCopy size={14} />}
-                              </button>
-                              <SyntaxHighlighter
-                                style={darkMode? oneDark : oneLight}
-                                language={match[1]}
-                                PreTag="div"
-                                {...props}
-                              >
-                                {String(children).replace(/\n$/, '')}
-                              </SyntaxHighlighter>
-                            </div>
-                          ) : (
-                            <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded" {...props}>
-                              {children}
-                            </code>
-                          );
-                        },
-                      }}
-                    >
-                      {m.content}
-                    </ReactMarkdown>
-                  </div>
-
-                  {m.role === 'assistant' && m.content && (
-                    <div className="flex gap-2 mt-2 opacity-0 group-hover:opacity-100 transition">
-                      <button
-                        onClick={() => copyToClipboard(m.content, i)}
-                        className="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center gap-1"
-                      >
-                        <FiCopy size={12} /> {copiedIndex === i? 'Copied!' : 'Copy'}
-                      </button>
-                      {i === messages.length - 1 && (
-                        <button
-                          onClick={regenerateLastResponse}
-                          disabled={isLoading}
-                          className="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center gap-1 disabled:opacity-50"
-                        >
-                          <FiRefreshCw size={12} /> Regenerate
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {isLoading && (
-            <div className="flex gap-3 mb-6">
-              <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                <FiCpu size={16} className="text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold mb-1">Hindustani AI</p>
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
-                </div>
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Input with Mic + Image + PDF */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          {imagePreview && (
-            <div className="mb-2 relative inline-block">
-              <img src={imagePreview} alt="preview" className="max-h-20 rounded border border-gray-300" />
-              <button
-                onClick={() => {
-                  setImagePreview(null);
-                  if (fileInputRef.current) fileInputRef.current.value = '';
-                }}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-              >
-                <FiX size={14} />
-              </button>
-            </div>
-          )}
-          <form onSubmit={handleSubmit} className="flex gap-2 max-w-3xl mx-auto">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageUpload}
-              accept="image/*"
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="p-3 rounded-lg border bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-300 dark:hover:bg-gray-600"
-              title="Upload Image"
-            >
-              <FiImage size={20} />
-            </button>
-            <button
-              type="button"
-              onClick={toggleListening}
-              className={`p-3 rounded-lg border ${
-                isListening
-              ? 'bg-red-500 text-white border-red-600 animate-pulse'
-                  : 'bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              {isListening? <FiMicOff size={20} /> : <FiMic size={20} />}
-            </button>
-            <input
-              className="flex-1 p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={input}
-              placeholder={isListening? "Bol raha hu..." : "Yahan likh bhai ya photo bhejo..."}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={isLoading}
-            />
-            <button
-              type="submit"
-              disabled={isLoading || (!input.trim() &&!imagePreview)}
-              className="px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg font-semibold"
-            >
-              Bhej
-            </button>
-          </form>
-          {isListening && (
-            <p className="text-center text-sm text-red-500 mt-2 animate-pulse">
-              🎤 Listening... Bolo bhai
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+                <h2 className="text-2xl font-bold mb-2">

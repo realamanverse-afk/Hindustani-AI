@@ -28,13 +28,11 @@ export default function Page() {
 
   const messages = chats.find(c => c.id === currentChatId)?.messages || [];
 
-  // Dark mode
   useEffect(() => {
     if (darkMode) document.documentElement.classList.add('dark');
     else document.documentElement.classList.remove('dark');
   }, [darkMode]);
 
-  // Load chats + name
   useEffect(() => {
     const savedChats = localStorage.getItem('all-chats');
     const savedName = localStorage.getItem('user-name');
@@ -58,7 +56,6 @@ export default function Page() {
     }
   }, []);
 
-  // Setup Voice Recognition
   useEffect(() => {
     if (typeof window!== 'undefined') {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -86,7 +83,6 @@ export default function Page() {
     }
   }, []);
 
-  // Save chats + auto scroll
   useEffect(() => {
     if (chats.length > 0) {
       localStorage.setItem('all-chats', JSON.stringify(chats));
@@ -209,7 +205,7 @@ export default function Page() {
             const lastMsg = updatedMessages[updatedMessages.length - 1];
             if (lastMsg?.role === 'assistant') {
               updatedMessages[updatedMessages.length - 1] = {
-           ...lastMsg,
+             ...lastMsg,
                 content: lastMsg.content + chunk
               };
             }
@@ -266,7 +262,7 @@ export default function Page() {
             const lastMsg = updatedMessages[updatedMessages.length - 1];
             if (lastMsg?.role === 'assistant') {
               updatedMessages[updatedMessages.length - 1] = {
-           ...lastMsg,
+             ...lastMsg,
                 content: lastMsg.content + chunk
               };
             }
@@ -283,7 +279,6 @@ export default function Page() {
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 text-black dark:text-white">
-      {/* Sidebar */}
       <div className={`${sidebarOpen? 'w-64' : 'w-0'} transition-all duration-300 bg-gray-900 text-white overflow-hidden md:w-64`}>
         <div className="p-4 h-full flex flex-col">
           <button
@@ -323,9 +318,7 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-white dark:bg-gray-800">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden">
@@ -350,7 +343,6 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Messages */}
         <div ref={chatRef} className="flex-1 overflow-y-auto p-4">
           {messages.length === 0 && (
             <div className="h-full flex items-center justify-center text-gray-500">
@@ -378,9 +370,10 @@ export default function Page() {
                   <div className="prose dark:prose-invert max-w-none">
                     <ReactMarkdown
                       components={{
-                        code({ inline, className, children,...props }) {
+                        code({ node, className, children }) {
                           const match = /language-(\w+)/.exec(className || '');
-                          return!inline && match? (
+                          const isInline =!match;
+                          return!isInline? (
                             <div className="relative group/code">
                               <button
                                 onClick={() => copyToClipboard(String(children), i)}
@@ -389,16 +382,15 @@ export default function Page() {
                                 {copiedIndex === i? '✓' : <FiCopy size={14} />}
                               </button>
                               <SyntaxHighlighter
-                                style={darkMode? oneDark : oneLight}
-                                language={match[1]}
+                                customStyle={darkMode? oneDark : oneLight}
+                                language={match? match[1] : undefined}
                                 PreTag="div"
-                                {...props}
                               >
                                 {String(children).replace(/\n$/, '')}
                               </SyntaxHighlighter>
                             </div>
                           ) : (
-                            <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded" {...props}>
+                            <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">
                               {children}
                             </code>
                           );
@@ -451,7 +443,6 @@ export default function Page() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input with Mic + Image + PDF */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           {imagePreview && (
             <div className="mb-2 relative inline-block">
@@ -488,7 +479,7 @@ export default function Page() {
               onClick={toggleListening}
               className={`p-3 rounded-lg border ${
                 isListening
-              ? 'bg-red-500 text-white border-red-600 animate-pulse'
+               ? 'bg-red-500 text-white border-red-600 animate-pulse'
                   : 'bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
             >

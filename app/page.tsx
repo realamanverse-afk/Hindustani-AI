@@ -209,7 +209,7 @@ export default function Page() {
             const lastMsg = updatedMessages[updatedMessages.length - 1];
             if (lastMsg?.role === 'assistant') {
               updatedMessages[updatedMessages.length - 1] = {
-               ...lastMsg,
+              ...lastMsg,
                 content: lastMsg.content + chunk
               };
             }
@@ -266,7 +266,7 @@ export default function Page() {
             const lastMsg = updatedMessages[updatedMessages.length - 1];
             if (lastMsg?.role === 'assistant') {
               updatedMessages[updatedMessages.length - 1] = {
-               ...lastMsg,
+              ...lastMsg,
                 content: lastMsg.content + chunk
               };
             }
@@ -390,7 +390,7 @@ export default function Page() {
                                 {copiedIndex === i? '✓' : <FiCopy size={14} />}
                               </button>
                               <SyntaxHighlighter
-                                style={darkMode? oneDark : oneLight}
+                                customStyle={darkMode? oneDark : oneLight}
                                 language={match? match[1] : undefined}
                                 PreTag="div"
                                 {...props}
@@ -489,7 +489,7 @@ export default function Page() {
               onClick={toggleListening}
               className={`p-3 rounded-lg border ${
                 isListening
-                 ? 'bg-red-500 text-white border-red-600 animate-pulse'
+                ? 'bg-red-500 text-white border-red-600 animate-pulse'
                   : 'bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
             >

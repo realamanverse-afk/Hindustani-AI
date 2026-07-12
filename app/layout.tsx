@@ -1,15 +1,20 @@
 import './globals.css'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 
 export const metadata: Metadata = {
   title: 'Hindustani AI IN - by Aman Developers',
   description: 'Desi AI Assistant with Voice, Image & PDF Export',
   manifest: '/manifest.json',
-  themeColor: '#FF9933',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/icon-192.png',
     apple: '/icon-192.png',
   },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#FF9933',
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
@@ -19,10 +24,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
-      </head>
       <body>{children}</body>
     </html>
   )

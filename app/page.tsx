@@ -248,29 +248,20 @@ export default function Page() {
         }),
       });
 
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
+      const data = await res.json();
 
-      while (true) {
-        const { done, value } = await reader!.read();
-        if (done) break;
-        const chunk = decoder.decode(value);
-
-        setChats(prev => prev.map(chat => {
-          if (chat.id === currentChatId) {
-            const updatedMessages = [...chat.messages];
-            const lastMsg = updatedMessages[updatedMessages.length - 1];
-            if (lastMsg?.role === 'assistant') {
-              updatedMessages[updatedMessages.length - 1] = {
-             ...lastMsg,
-                content: lastMsg.content + chunk
-              };
-            }
-            return {...chat, messages: updatedMessages };
-          }
-          return chat;
-        }));
-      }
+setChats(prev => prev.map(chat => {
+  if (chat.id === currentChatId) {
+    return {
+      ...chat,
+      messages: [
+        ...chat.messages,
+        { role: 'assistant', content: data.reply }  // ✅ Sirf reply
+      ]
+    };
+  }
+  return chat;
+}));
     } catch (error) {
       console.error(error);
     }

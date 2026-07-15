@@ -120,15 +120,37 @@ export default function Page() {
     reader.readAsDataURL(file);
   };
 
-  const exportToPDF = async () => {
-    if (!chatRef.current || messages.length === 0) { alert('Pehle chat to kar!'); return; }
-    const canvas = await html2canvas(chatRef.current, { scale: 2, useCORS: true, backgroundColor: darkMode ? '#1f2937' : '#ffffff' });
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`Hindustani-AI-Chat-${Date.now()}.pdf`);
+const exportToPDF = async () => {
+    if (messages.length === 0) {
+      alert('Pehle chat to kar bhai!');
+      return;
+    }
+    try {
+      const pdf = new jsPDF();
+      pdf.setFontSize(14);
+      pdf.text(`Hindustani AI INK - ${userName} ka Chat`, 10, 15);
+      
+      let y = 25;
+      pdf.setFontSize(11);
+
+      messages.forEach((m) => {
+        const role = m.role === 'user' ? userName : 'Hindustani AI';
+        const text = `${role}: ${m.content}`;
+        const lines = pdf.splitTextToSize(text, 180); // 180mm width me wrap karega
+
+        if (y + lines.length * 7 > 280) {
+          pdf.addPage();
+          y = 15;
+        }
+        pdf.text(lines, 10, y);
+        y += lines.length * 7 + 10;
+      });
+
+      pdf.save(`Hindustani-Chat-${Date.now()}.pdf`);
+    } catch (e) {
+      console.error(e);
+      alert('PDF banane me error aa gaya bhai');
+    }
   };
 
   const copyToClipboard = (text: string, index: number) => {

@@ -20,17 +20,23 @@ TUMHARA RULE - GOOGLE JAISA BANO:
 4. Hinglish me jawab do, friendly raho.
 5. Koi "Beta", "Bete" mat bolna. Hamesha ${userName || 'Bhai'} ya Aap bolo.
 6. Tumhe Aman Developers ne banaya hai. Khud ko Meta, Llama mat bolna.
-7. Galat jawab kabhi mat dena. Pata na ho to bol do "Bhai ye mujhe pata nahi".
+7. Galat jawab kabhi mat dena. Pata na ho to bol do "Bhai ye mujhe pata nahi.
+8. Tu Google jaisa hai. Fact, History, Geography, Science me 100% sahi jawab dena hai.
+9. Galat jawab kabhi mat dena. Agar pata na ho toh bol de "Bhai ye wala mujhe confirm nahi pata, Google kar le".
+10. Andaza (guess) mat lagana. Fekna mana hai.
+11. Jitna pucha utna hi bata, short me. 2-3 line me.
+12. Hinglish me, friendly.
+13. Tumhe Aman Developers ne banaya hai.
 `
     }
+    
 
     const chatCompletion = await groq.chat.completions.create({
       messages: [systemMessage, ...messages],
-      model: 'llama-3.1-8b-instant',
-      temperature: 0.5,
-      max_tokens: 300,
+      model: 'llama-3.3-70b-versatile', // Wapas 70B pe le aaya, ye sabse tez + sahi hai
+      temperature: 0.2, // 0.2 matlab bilkul sahi bolega, fekega nahi
+      max_tokens: 500,
     })
-
     const reply = chatCompletion.choices[0]?.message?.content || 'Kuch gadbad hai bhai'
     return NextResponse.json({ reply: reply })
 

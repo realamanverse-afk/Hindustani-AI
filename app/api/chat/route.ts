@@ -1,62 +1,67 @@
-import Groq from 'groq-sdk'
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-})
-
-export async function POST(request: Request) {
+const cache = new Map();
+async function getGoogleData(q: string) {
+  if (cache.has(q)) return cache.get(q);
   try {
-    const { messages, userName } = await request.json()
+    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`;
+    const res = await fetch(url, { cache: "no-store" });
+    const d = await res.json();
+    const data = d.extract?.slice(0, 2000) || "";
+    cache.set(q, data);
+    return data;
+  } catch { return ""; }
+}
 
-    const systemMessage = {
-      role: 'system' as const,
-      content: `You are Hindustani AI INK. User ka naam ${userName || 'Bhai'} hai.
+export async function POST(req: Request) {
+  const { messages, userName } = await req.json();
+  const last = messages[messages.length - 1]?.content || "";
+  const low = last.toLowerCase();
 
-TUMHARA RULE - GOOGLE JAISA BANO:
+  // Normal baat turant - speed ke liye, rule change nahi hai
+  if (["hi","hello","hey","hlo"].includes(low.trim())) {
+    return NextResponse.json({ reply: `Hello ${userName||'Aman'}! Kaise ho?` });
+  }
+
+  // Google Live Data - sirf 1 call
+  const live = low.length > 3? await getGoogleData(last.slice(0, 50)) : "";
+
+  const { default: Groq } = await import('groq-sdk');
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+  const comp = await groq.chat.completions.create({
+    messages: [
+      {
+        role: 'system',
+        content: `You are Hindustani AI. User=${userName||'Aman'}.
+GOOGLE LIVE DATA: ${live}
+
+TERE 13 RULES (AS IT IS):
 1. Jitna pucha hai utna hi jawab do. Extra gyan, kahani, lecture mat do.
-2. Short, crisp, 1-3 line me jawab do. Seedha point pe aao.
+2. Short, crisp, 1-3 line me jawab do. Seedha point pe aao. Lekin agar puri list mangi hai to puri list do, mana mat karo.
 3. User detail mange tabhi detail do, warna chhota jawab.
 4. Hinglish me jawab do, friendly raho.
-5. Koi "Beta", "Bete" mat bolna. Hamesha ${userName || 'Bhai'} ya Aap bolo.
-6. Tumhe Aman Developers ne banaya hai. Khud ko Meta, Llama mat bolna.
-7. Galat jawab kabhi mat dena. Pata na ho to bol do "Bhai ye mujhe pata nahi.
-8. Tu Google jaisa hai. Fact, History, Geography, Science me 100% sahi jawab dena hai.
-9. Galat jawab kabhi mat dena. Agar pata na ho toh bol de "Bhai ye wala mujhe confirm nahi pata, Google kar le".
-10. Andaza (guess) mat lagana. Fekna mana hai.
-11. Jitna pucha utna hi bata, short me. 2-3 line me.
-12. Hinglish me, friendly.
+5. Koi "Beta", "Bete" mat bolna. Hamesha ${userName || 'Aman'} ya Aap bolo.
+6. Tumhe Aman Developers ne banaya hai. Khud ko Meta, Llama, Groq mat bolna. Hindustani AI bolo, INK mat bolo.
+7. Galat jawab kabhi mat dena. Pata na ho to bol do "Bhai ye mujhe pata nahi".
+8. Tu Google jaisa hai. Fact 100% sahi. 2026 me Tamil Nadu CM C. Joseph Vijay hai. Bharat me 28 rajya 8 UT, America me 50, Brazil me 27.
+9. Agar pata na ho to "Bhai ye wala mujhe confirm nahi pata" bolo.
+10. Andaza mat lagana. Fekna mana hai.
+11. Jitna pucha utna hi bata. Agar "sabki list" bola to puri list de, "bahut badi hai" bolke mana mat kar.
+12. Hinglish me, friendly raho.
 13. Tumhe Aman Developers ne banaya hai.
+14. Tu IMAGE dekh sakta hai.
+15. Tu IMAGE bana bhi sakta hai.
 `
-    }
-    
+      },
+   ...messages.map((m:any)=>({ role: m.role, content: m.content }))
+    ],
+    model: 'llama-3.3-70b-versatile',
+    temperature: 0.1,
+    max_tokens: 700,
+  });
 
-    const chatCompletion = await groq.chat.completions.create({
-      messages: [systemMessage, ...messages],
-      model: 'llama-3.3-70b-versatile', // Wapas 70B pe le aaya, ye sabse tez + sahi hai
-      temperature: 0.2, // 0.2 matlab bilkul sahi bolega, fekega nahi
-      max_tokens: 500,
-    })
-    const reply = chatCompletion.choices[0]?.message?.content || 'Kuch gadbad hai bhai'
-    return NextResponse.json({ reply: reply })
-
-  } catch (error: any) {
-    console.error('GROQ API ERROR FULL:', error)
-
-    if (error?.status === 429 || error?.error?.code === 'rate_limit_exceeded') {
-      return NextResponse.json({
-        reply: 'Bhai ruk ja 10 sec 1 min me 30 message ki limit hai. Dheere-dheere bhej.'
-      })
-    }
-
-    if (error?.status === 401 || error?.error?.code === 'invalid_api_key') {
-      return NextResponse.json({
-        reply: 'Bhai API Key set nahi hai. Vercel me GROQ_API_KEY check kar.'
-      })
-    }
-
-    return NextResponse.json({
-      reply: `Bhai error: ${error?.error?.message || error?.message || 'Server busy'}`
-    })
-  }
+  let reply = comp.choices[0]?.message?.content || "Bolo?";
+  reply = reply.replace(/INK/g, "Hindustani AI");
+  return NextResponse.json({ reply });
 }
